@@ -1,22 +1,28 @@
-# 🏦 Virtual Bank Application
+## 🏦 Virtual Bank Application
 
-A full-stack virtual banking system built step-by-step using modern web technologies.
+A Full-Stack Banking Application built using:
 
-## 🚀 Features (Planned)
-- Create bank account
-- Secure PIN-based access
-- Deposit & withdraw money
-- Transfer funds
-- Search accounts
-- Change PIN
+- Node.js
+- Express.js
+- MongoDB Atlas
+- Mongoose
 
-## 🛠 Tech Stack
-- Frontend: React
-- Backend: Node.js, Express
-- Database: MongoDB
+### 🚀 Features Implemented
 
-## 📌 Status
-🚧 Project under active development
+- Create Account
+- Deposit Money
+- Withdraw Money
+- Transfer Money
+- Account Info
 
-## 👨‍💻 Author
-Sunny Surendra
+### 🔐 Security
+- PIN verification
+- MongoDB Atlas cloud database
+- Environment variables
+
+### 📦 Backend Setup
+
+```bash
+cd backend
+npm install
+npm start
