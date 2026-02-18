@@ -14,9 +14,13 @@ const app = express();
 // ===============================
 app.use(
   cors({
-    origin: "*", // For deployment (can restrict later)
+    origin: [
+      "http://localhost:3000",
+      "https://your-vercel-url.vercel.app"
+    ]
   })
 );
+
 
 app.use(express.json());
 
