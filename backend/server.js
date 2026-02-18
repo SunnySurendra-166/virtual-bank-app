@@ -5,32 +5,42 @@ const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 const dns = require("dns");
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
+dns.setServers(["8.8.8.8", "8.8.4.4"]); // Helps with DNS issues
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// ===============================
+// MIDDLEWARE
+// ===============================
+app.use(
+  cors({
+    origin: "*", // For deployment (can restrict later)
+  })
+);
+
 app.use(express.json());
 
-// Model
+// ===============================
+// MODEL
+// ===============================
 const BankAccount = require("./models/BankAccount");
 
 // ===============================
-// MongoDB Connection
+// MONGODB CONNECTION
 // ===============================
-mongoose.connect(process.env.MONGO_URI, {
-  serverSelectionTimeoutMS: 5000,
-  family: 4
-})
-.then(() => console.log("✅ MongoDB Connected"))
-.catch(err => {
-  console.error("❌ MongoDB Error:", err.message);
-  process.exit(1);
-});
+mongoose
+  .connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
+    family: 4,
+  })
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => {
+    console.error("❌ MongoDB Error:", err.message);
+    process.exit(1);
+  });
 
 // ===============================
-// Root Route
+// ROOT ROUTE (Render Test)
 // ===============================
 app.get("/", (req, res) => {
   res.send("🏦 Virtual Bank Backend is Running");
@@ -52,7 +62,6 @@ app.post("/create-account", async (req, res) => {
     }
 
     const hashedPin = await bcrypt.hash(pin, 10);
-
     const accountNumber = Math.floor(100000 + Math.random() * 900000);
 
     const newAccount = new BankAccount({
@@ -63,18 +72,18 @@ app.post("/create-account", async (req, res) => {
       transactions: [
         {
           type: "ACCOUNT_CREATED",
-          amount: Number(balance)
-        }
-      ]
+          amount: Number(balance),
+          date: new Date(),
+        },
+      ],
     });
 
     await newAccount.save();
 
     res.status(201).json({
       message: "✅ Account created successfully",
-      accountNumber
+      accountNumber,
     });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -101,16 +110,16 @@ app.post("/deposit", async (req, res) => {
 
     account.transactions.push({
       type: "DEPOSIT",
-      amount: Number(amount)
+      amount: Number(amount),
+      date: new Date(),
     });
 
     await account.save();
 
     res.json({
       message: "💰 Deposit successful",
-      newBalance: account.balance
+      newBalance: account.balance,
     });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -130,7 +139,6 @@ app.post("/withdraw", async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(pin, account.pin);
-
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid PIN" });
     }
@@ -143,16 +151,16 @@ app.post("/withdraw", async (req, res) => {
 
     account.transactions.push({
       type: "WITHDRAW",
-      amount: Number(amount)
+      amount: Number(amount),
+      date: new Date(),
     });
 
     await account.save();
 
     res.json({
       message: "🏧 Withdrawal successful",
-      newBalance: account.balance
+      newBalance: account.balance,
     });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -172,7 +180,6 @@ app.post("/account-info", async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(pin, account.pin);
-
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid PIN" });
     }
@@ -181,16 +188,15 @@ app.post("/account-info", async (req, res) => {
       name: account.name,
       accountNumber: account.accountNumber,
       balance: account.balance,
-      transactions: account.transactions
+      transactions: account.transactions,
     });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 // ===============================
-// TRANSFER (SECURE + ATOMIC)
+// TRANSFER (ATOMIC TRANSACTION)
 // ===============================
 app.post("/transfer", async (req, res) => {
   const session = await mongoose.startSession();
@@ -207,7 +213,6 @@ app.post("/transfer", async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(pin, sender.pin);
-
     if (!isMatch) {
       throw new Error("Invalid PIN");
     }
@@ -221,12 +226,14 @@ app.post("/transfer", async (req, res) => {
 
     sender.transactions.push({
       type: "TRANSFER_SENT",
-      amount: Number(amount)
+      amount: Number(amount),
+      date: new Date(),
     });
 
     receiver.transactions.push({
       type: "TRANSFER_RECEIVED",
-      amount: Number(amount)
+      amount: Number(amount),
+      date: new Date(),
     });
 
     await sender.save({ session });
@@ -237,9 +244,8 @@ app.post("/transfer", async (req, res) => {
 
     res.json({
       message: "💸 Transfer successful",
-      senderBalance: sender.balance
+      senderBalance: sender.balance,
     });
-
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -248,7 +254,7 @@ app.post("/transfer", async (req, res) => {
 });
 
 // ===============================
-// START SERVER
+// START SERVER (Render Compatible)
 // ===============================
 const PORT = process.env.PORT || 5000;
 
