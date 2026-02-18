@@ -6,6 +6,9 @@ A Full-Stack Banking Application built using:
 - Express.js
 - MongoDB Atlas
 - Mongoose
+- React
+- Vercel (Frontend Hosting)
+- Render (Backend Hosting)
 
 ### 🚀 Features Implemented
 
@@ -16,9 +19,15 @@ A Full-Stack Banking Application built using:
 - Account Info
 
 ### 🔐 Security
-- PIN verification
+- PIN hashing using bcrypt
 - MongoDB Atlas cloud database
 - Environment variables
+- Production CORS configuration
+
+### 🌍 Live Demo
+
+Frontend: https://virtual-bank-app.vercel.app  
+Backend: https://virtual-bank-app.onrender.com
 
 ### 📦 Backend Setup
 
